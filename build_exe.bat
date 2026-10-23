@@ -39,3 +39,4 @@ if exist "dist\LibraryManagementSystem\LibraryManagementSystem.exe" (
 )
 echo.
 pause
+
