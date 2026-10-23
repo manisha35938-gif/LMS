@@ -17,10 +17,10 @@ import unittest
 import sqlite3
 from datetime import datetime, timedelta
 
-import security
-import validators
-import utils
-import database
+from backend import security
+from backend import validators
+from backend import utils
+from database import database
 
 
 class TestLMSSuite(unittest.TestCase):

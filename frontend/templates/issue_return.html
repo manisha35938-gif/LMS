@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}Issue & Return - Library Management System{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Issue & Return Workflow</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Lend books to active members, track due dates, and process returns with automatic fine calculation.</p>
+        </div>
+    </div>
+
+    <!-- Issue Book Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-4 flex items-center space-x-2">
+            <i class="fa-solid fa-hand-holding-hand text-blue-600"></i>
+            <span>Issue a Book to a Member</span>
+        </h2>
+        <form method="POST" action="{{ url_for('issue_book') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs items-end">
+            <!-- Member dropdown -->
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1.5">Select Member *</label>
+                <select name="member_id" required class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled selected>-- Select an active member --</option>
+                    {% for m in members %}
+                        <option value="{{ m.id }}">{{ m.name }} (ID: {{ m.id }}{% if m.phone %} - {{ m.phone }}{% endif %})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Book dropdown -->
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1.5">Select Available Book *</label>
+                <select name="book_id" required class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled selected>-- Select a book --</option>
+                    {% for b in books %}
+                        <option value="{{ b.id }}">{{ b.title }} ({{ b.available }} available)</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1.5">Issue Date</label>
+                    <input type="date" name="issue_date" value="{{ today_str }}" required class="w-full p-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1.5">Due Date</label>
+                    <input type="date" name="due_date" value="{{ default_due_date }}" required class="w-full p-2 rounded-xl border border-slate-300 text-xs">
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <div>
+                <button type="submit" class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                    <span>Confirm & Issue</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Loans Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-800">Currently Issued Books</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Active book loans awaiting return</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                {{ active_loans|length }} Active Loan(s)
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
+                    <tr>
+                        <th class="py-3 px-4">Loan ID</th>
+                        <th class="py-3 px-4">Book Title</th>
+                        <th class="py-3 px-4">Member Name</th>
+                        <th class="py-3 px-4">Issue Date</th>
+                        <th class="py-3 px-4">Due Date</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% if active_loans %}
+                        {% for loan in active_loans %}
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="py-3.5 px-4 font-mono text-slate-400">#{{ loan.id }}</td>
+                            <td class="py-3.5 px-4 font-semibold text-slate-800">{{ loan.book_title }}</td>
+                            <td class="py-3.5 px-4 text-slate-600">{{ loan.member_name }}</td>
+                            <td class="py-3.5 px-4 text-slate-500">{{ loan.issue_date }}</td>
+                            <td class="py-3.5 px-4 text-slate-500">{{ loan.due_date }}</td>
+                            <td class="py-3.5 px-4 text-center">
+                                {% if loan.due_date < today_str %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Overdue
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
+                                        Issued
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3.5 px-4 text-right">
+                                <form method="POST" action="{{ url_for('return_book', issue_id=loan.id) }}" class="inline" onsubmit="return confirm('Confirm book return? Any overdue fine will be automatically calculated.');">
+                                    <button type="submit" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-transparent rounded-lg font-semibold transition-all">
+                                        Return Book
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-check-circle text-3xl mb-2 text-emerald-500 block"></i>
+                                All borrowed books have been returned. No active loans!
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Loan History Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+                <h2 class="text-base font-bold text-slate-800">Loan & Return History</h2>
+                <p class="text-xs text-slate-400 mt-0.5">Historical records and fine accounting</p>
+            </div>
+            <a href="{{ url_for('reports', type='history') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Detailed Report &rarr;</a>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
+                    <tr>
+                        <th class="py-3 px-4">Loan ID</th>
+                        <th class="py-3 px-4">Book Title</th>
+                        <th class="py-3 px-4">Member Name</th>
+                        <th class="py-3 px-4">Issue Date</th>
+                        <th class="py-3 px-4">Due Date</th>
+                        <th class="py-3 px-4">Return Date</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4 text-right">Fine</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% if loan_history %}
+                        {% for h in loan_history %}
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="py-3 px-4 font-mono text-slate-400">#{{ h.id }}</td>
+                            <td class="py-3 px-4 font-semibold text-slate-800">{{ h.book_title }}</td>
+                            <td class="py-3 px-4 text-slate-600">{{ h.member_name }}</td>
+                            <td class="py-3 px-4 text-slate-500">{{ h.issue_date }}</td>
+                            <td class="py-3 px-4 text-slate-500">{{ h.due_date }}</td>
+                            <td class="py-3 px-4 text-slate-500">{{ h.return_date or '-' }}</td>
+                            <td class="py-3 px-4">
+                                {% if h.status == 'Returned' %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Returned</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Issued</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-right font-mono font-semibold {% if h.fine > 0 %}text-rose-600{% else %}text-slate-400{% endif %}">
+                                {{ format_currency(h.fine) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="py-8 text-center text-slate-400">No loan records yet.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

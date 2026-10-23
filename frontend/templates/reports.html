@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Reports - Library Management System{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Library Analytics & Reports</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Generate insights, monitor overdue loans, view reader activity, and export reports to CSV for Excel.</p>
+        </div>
+        <a href="{{ url_for('export_csv', type=report_type, from_date=from_date, to_date=to_date) }}"
+           class="inline-flex items-center space-x-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-emerald-500/20 transition-all">
+            <i class="fa-solid fa-file-csv text-sm"></i>
+            <span>Export to CSV</span>
+        </a>
+    </div>
+
+    <!-- Filter Control Card -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <!-- Report Type Selection Pills -->
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ url_for('reports', type='summary') }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all {% if report_type == 'summary' %}bg-blue-600 text-white shadow-sm shadow-blue-500/20{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                <i class="fa-solid fa-chart-column mr-1.5"></i> Summary
+            </a>
+            <a href="{{ url_for('reports', type='overdue') }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all {% if report_type == 'overdue' %}bg-blue-600 text-white shadow-sm shadow-blue-500/20{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> Overdue Books
+            </a>
+            <a href="{{ url_for('reports', type='most_issued') }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all {% if report_type == 'most_issued' %}bg-blue-600 text-white shadow-sm shadow-blue-500/20{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                <i class="fa-solid fa-fire mr-1.5"></i> Most Issued Books
+            </a>
+            <a href="{{ url_for('reports', type='active_members') }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all {% if report_type == 'active_members' %}bg-blue-600 text-white shadow-sm shadow-blue-500/20{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                <i class="fa-solid fa-users mr-1.5"></i> Active Borrowers
+            </a>
+            <a href="{{ url_for('reports', type='history') }}"
+               class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all {% if report_type == 'history' %}bg-blue-600 text-white shadow-sm shadow-blue-500/20{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                <i class="fa-solid fa-clock-rotate-left mr-1.5"></i> Loan History
+            </a>
+        </div>
+
+        {% if report_type == 'history' %}
+        <!-- Date Range Filter for Loan History -->
+        <form method="GET" action="{{ url_for('reports') }}" class="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-3 text-xs">
+            <input type="hidden" name="type" value="history">
+            <div class="flex items-center space-x-2">
+                <label class="font-semibold text-slate-600">From:</label>
+                <input type="date" name="from_date" value="{{ from_date }}" class="p-1.5 rounded-lg border border-slate-300">
+            </div>
+            <div class="flex items-center space-x-2">
+                <label class="font-semibold text-slate-600">To:</label>
+                <input type="date" name="to_date" value="{{ to_date }}" class="p-1.5 rounded-lg border border-slate-300">
+            </div>
+            <button type="submit" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-lg">
+                Filter
+            </button>
+            {% if from_date or to_date %}
+            <a href="{{ url_for('reports', type='history') }}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg">
+                Reset
+            </a>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Report Table Display -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
+                    <tr>
+                        {% for col in headers %}
+                            <th class="py-3 px-4">{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% if data %}
+                        {% for row in data %}
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            {% for cell in row %}
+                                <td class="py-3.5 px-4 {% if loop.first and report_type == 'summary' %}font-bold text-slate-800{% else %}text-slate-600{% endif %}">
+                                    {{ cell }}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="{{ headers|length }}" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-chart-pie text-3xl mb-2 block"></i>
+                                No data available for this report criteria.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -8,10 +8,10 @@ shown in a Treeview table.
 import tkinter as tk
 from tkinter import ttk
 
-from database import connect_database
+from database.database import connect_database
 from style import setup_style, COLORS, FONTS
 from utils import center_window, show_error, show_info, show_warning, confirm, clear_treeview, today_str
-from validators import not_empty, is_valid_phone, is_valid_email
+from backend.validators import not_empty, is_valid_phone, is_valid_email
 
 COLUMNS = ("id", "name", "phone", "email", "status", "registration_date")
 HEADINGS = ("ID", "Name", "Phone", "Email", "Status", "Registered On")

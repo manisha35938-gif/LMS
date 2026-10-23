@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block title %}Manage Members - Library Management System{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Top Action Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Members Directory</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Register, update, and manage student and faculty library members.</p>
+        </div>
+        <button onclick="openModal('addMemberModal')" class="inline-flex items-center space-x-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-md shadow-blue-500/20 transition-all">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Register New Member</span>
+        </button>
+    </div>
+
+    <!-- Search Box -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <form method="GET" action="{{ url_for('members') }}" class="flex-1 flex items-center space-x-3">
+            <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                </span>
+                <input type="text" name="q" value="{{ search_query }}"
+                       class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400"
+                       placeholder="Search members by name, phone, or email...">
+            </div>
+            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl transition-colors">
+                Search
+            </button>
+            {% if search_query %}
+            <a href="{{ url_for('members') }}" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition-colors">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Members Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider font-semibold border-b border-slate-100">
+                    <tr>
+                        <th class="py-3 px-4">Member ID</th>
+                        <th class="py-3 px-4">Full Name</th>
+                        <th class="py-3 px-4">Phone</th>
+                        <th class="py-3 px-4">Email</th>
+                        <th class="py-3 px-4">Address</th>
+                        <th class="py-3 px-4">Status</th>
+                        <th class="py-3 px-4">Registered On</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% if members %}
+                        {% for member in members %}
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="py-3 px-4 font-mono text-slate-400">#{{ member.id }}</td>
+                            <td class="py-3 px-4 font-semibold text-slate-800">{{ member.name }}</td>
+                            <td class="py-3 px-4 font-mono text-slate-600">{{ member.phone or '-' }}</td>
+                            <td class="py-3 px-4 text-slate-600">{{ member.email or '-' }}</td>
+                            <td class="py-3 px-4 text-slate-500 max-w-[180px] truncate" title="{{ member.address or '' }}">{{ member.address or '-' }}</td>
+                            <td class="py-3 px-4">
+                                {% if member.status == 'Active' %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                        <span class="w-1 h-1 rounded-full bg-emerald-500 mr-1"></span> Active
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-slate-500">{{ member.registration_date or '-' }}</td>
+                            <td class="py-3 px-4 text-right space-x-2">
+                                <button onclick="openEditMemberModal({{ member|tojson }})" class="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Member">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <form method="POST" action="{{ url_for('delete_member', member_id=member.id) }}" class="inline" onsubmit="return confirm('Delete this member? This will also remove any past loan records for this member.');">
+                                    <button type="submit" class="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors" title="Delete Member">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-users text-3xl mb-2 block"></i>
+                                No library members found matching your search.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Member Modal -->
+<div id="addMemberModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden border border-slate-200">
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+            <h3 class="font-bold text-sm">Register Member</h3>
+            <button onclick="closeModal('addMemberModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form method="POST" action="{{ url_for('add_member') }}" class="p-6 space-y-4 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Full Name *</label>
+                <input type="text" name="name" required placeholder="Member's full name" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Phone Number</label>
+                    <input type="text" name="phone" placeholder="e.g. 9876543210" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Status</label>
+                    <select name="status" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+                        <option value="Active" selected>Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Email Address</label>
+                <input type="email" name="email" placeholder="e.g. member@example.com" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Address / Department</label>
+                <textarea name="address" rows="2" placeholder="Residential or university address" class="w-full p-2.5 rounded-xl border border-slate-300"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button type="button" onclick="closeModal('addMemberModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold">Register Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div id="editMemberModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden border border-slate-200">
+        <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+            <h3 class="font-bold text-sm">Edit Member</h3>
+            <button onclick="closeModal('editMemberModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="editMemberForm" method="POST" action="" class="p-6 space-y-4 text-xs">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Full Name *</label>
+                <input type="text" name="name" id="edit_member_name" required class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Phone Number</label>
+                    <input type="text" name="phone" id="edit_member_phone" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Status</label>
+                    <select name="status" id="edit_member_status" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Email Address</label>
+                <input type="email" name="email" id="edit_member_email" class="w-full p-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">Address / Department</label>
+                <textarea name="address" id="edit_member_address" rows="2" class="w-full p-2.5 rounded-xl border border-slate-300"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button type="button" onclick="closeModal('editMemberModal')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold">Update Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+    function openEditMemberModal(member) {
+        document.getElementById('editMemberForm').action = "/members/edit/" + member.id;
+        document.getElementById('edit_member_name').value = member.name || '';
+        document.getElementById('edit_member_phone').value = member.phone || '';
+        document.getElementById('edit_member_email').value = member.email || '';
+        document.getElementById('edit_member_address').value = member.address || '';
+        document.getElementById('edit_member_status').value = member.status || 'Active';
+        openModal('editMemberModal');
+    }
+</script>
+{% endblock %}

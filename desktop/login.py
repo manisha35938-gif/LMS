@@ -8,8 +8,8 @@ success, closes itself and opens the dashboard.
 import tkinter as tk
 from tkinter import ttk
 
-from database import connect_database
-from security import verify_password
+from database.database import connect_database
+from backend.security import verify_password
 from style import setup_style, COLORS, FONTS
 from utils import center_window, show_error, show_warning
 

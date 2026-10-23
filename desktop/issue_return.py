@@ -9,7 +9,7 @@ of sync with the `issued_books` records.
 import tkinter as tk
 from tkinter import ttk
 
-from database import connect_database
+from database.database import connect_database
 from style import setup_style, COLORS, FONTS
 from utils import (
     center_window, show_error, show_info, show_warning, confirm,

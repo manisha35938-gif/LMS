@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Library Management System{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1a5276',
+                        'primary-dark': '#123a54',
+                        accent: '#2e86c1',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    {% if session.get('user_id') %}
+    <!-- Main App Layout with Sidebar -->
+    <div class="flex flex-1 min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-slate-200 flex flex-col fixed inset-y-0 z-30 transition-transform transform -translate-x-full md:translate-x-0" id="sidebar">
+            <!-- Brand -->
+            <div class="p-6 border-b border-slate-800 flex items-center space-x-3 bg-slate-950">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white tracking-wide text-base">LMS Portal</h1>
+                    <p class="text-xs text-slate-400">Library System</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'dashboard' %}bg-blue-600 text-white shadow-md shadow-blue-600/30{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-gauge w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('books') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors {% if request.endpoint in ['books', 'add_book'] %}bg-blue-600 text-white shadow-md shadow-blue-600/30{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-book w-5 text-center"></i>
+                    <span>Manage Books</span>
+                </a>
+                <a href="{{ url_for('members') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors {% if request.endpoint in ['members', 'add_member'] %}bg-blue-600 text-white shadow-md shadow-blue-600/30{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-users w-5 text-center"></i>
+                    <span>Manage Members</span>
+                </a>
+                <a href="{{ url_for('issue_return') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'issue_return' %}bg-blue-600 text-white shadow-md shadow-blue-600/30{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-right-left w-5 text-center"></i>
+                    <span>Issue & Return</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'reports' %}bg-blue-600 text-white shadow-md shadow-blue-600/30{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                    <span>Reports & Export</span>
+                </a>
+                <div class="pt-4 mt-4 border-t border-slate-800">
+                    <a href="{{ url_for('change_password') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors {% if request.endpoint == 'change_password' %}bg-blue-600 text-white shadow-md shadow-blue-600/30{% else %}text-slate-400 hover:bg-slate-800 hover:text-white{% endif %}">
+                        <i class="fa-solid fa-key w-5 text-center"></i>
+                        <span>Change Password</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- User profile & Logout -->
+            <div class="p-4 border-t border-slate-800 bg-slate-950/80">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm">
+                            {{ session.get('username', 'A')[0]|upper }}
+                        </div>
+                        <div class="truncate">
+                            <p class="text-xs font-semibold text-white truncate">{{ session.get('username') }}</p>
+                            <p class="text-[10px] text-emerald-400 font-medium">Administrator</p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('logout') }}" title="Logout" class="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+            <!-- Top Navbar -->
+            <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
+                <button id="sidebarToggle" class="md:hidden text-slate-600 hover:text-slate-900 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="flex items-center space-x-2 text-sm text-slate-500">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>Today: <strong class="text-slate-700">{{ today_str }}</strong></span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                        System Online
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="text-xs font-semibold text-slate-600 hover:text-red-600 flex items-center space-x-1.5 bg-slate-100 hover:bg-red-50 px-3 py-1.5 rounded-lg border border-slate-200 transition-colors">
+                        <i class="fa-solid fa-power-off"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Alerts / Flashes -->
+            <div class="px-6 pt-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="mb-4 flex items-center p-4 rounded-xl border text-sm font-medium {% if category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% elif category == 'danger' %}bg-rose-50 border-rose-200 text-rose-800{% elif category == 'warning' %}bg-amber-50 border-amber-200 text-amber-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} shadow-sm">
+                                <span class="mr-3">
+                                    {% if category == 'success' %}
+                                        <i class="fa-solid fa-circle-check text-emerald-500 text-base"></i>
+                                    {% elif category == 'danger' %}
+                                        <i class="fa-solid fa-triangle-exclamation text-rose-500 text-base"></i>
+                                    {% elif category == 'warning' %}
+                                        <i class="fa-solid fa-circle-exclamation text-amber-500 text-base"></i>
+                                    {% else %}
+                                        <i class="fa-solid fa-circle-info text-blue-500 text-base"></i>
+                                    {% endif %}
+                                </span>
+                                <span class="flex-1">{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Content -->
+            <main class="flex-1 p-6">
+                {% block content %}{% endblock %}
+            </main>
+
+            <!-- Footer -->
+            <footer class="p-6 text-center text-xs text-slate-400 border-t border-slate-200 bg-white">
+                Library Management System &copy; 2026 &middot; Cloud-deployed on Vercel
+            </footer>
+        </div>
+    </div>
+    {% else %}
+        <!-- Simple Fullscreen Container for Login -->
+        <main class="flex-1 flex flex-col justify-center items-center p-4">
+            {% block auth_content %}{% endblock %}
+        </main>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -25,7 +25,7 @@ if %errorlevel% neq 0 (
 )
 
 echo Building executable...
-%PYTHON_CMD% -m PyInstaller --noconfirm --onedir --windowed --add-data "library.db;." --name "LibraryManagementSystem" main.py
+%PYTHON_CMD% -m PyInstaller --noconfirm --onedir --windowed --add-data "database\library.db;database" --name "LibraryManagementSystem" desktop\main.py
 
 echo.
 if exist "dist\LibraryManagementSystem\LibraryManagementSystem.exe" (

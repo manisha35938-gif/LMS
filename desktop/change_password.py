@@ -7,11 +7,11 @@ Standalone window to let a user change their own password.
 import tkinter as tk
 from tkinter import ttk
 
-from database import connect_database
-from security import verify_password, hash_password
+from database.database import connect_database
+from backend.security import verify_password, hash_password
 from style import setup_style, COLORS, FONTS
 from utils import center_window, show_error, show_info, show_warning
-from validators import not_empty
+from backend.validators import not_empty
 
 MIN_PASSWORD_LENGTH = 6
 

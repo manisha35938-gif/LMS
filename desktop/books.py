@@ -10,10 +10,10 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 
-from database import connect_database
+from database.database import connect_database
 from style import setup_style, COLORS, FONTS
 from utils import center_window, show_error, show_info, show_warning, confirm, clear_treeview
-from validators import not_empty, is_valid_quantity, is_valid_year, is_valid_isbn
+from backend.validators import not_empty, is_valid_quantity, is_valid_year, is_valid_isbn
 
 COLUMNS = ("id", "isbn", "title", "author", "category", "quantity", "available", "shelf")
 HEADINGS = ("ID", "ISBN", "Title", "Author", "Category", "Qty", "Available", "Shelf")

@@ -1,20 +1,16 @@
 """
 main.py
---------
-Application entry point. Initializes the database (creating it and the
-default admin account if needed) and then launches the login screen.
-Run this file to start the application - do not run any other module
-directly.
+-------
+Root application entry point.
+Launches the Library Management System Web Application on http://127.0.0.1:5000
 """
 
-from database import init_database
-import login
-
-
-def main():
-    init_database()
-    login.main()
-
+from backend.app import app
 
 if __name__ == "__main__":
-    main()
+    print("==================================================")
+    print("Library Management System Web Application")
+    print("Local URL: http://127.0.0.1:5000")
+    print("Default Admin: admin / admin123")
+    print("==================================================")
+    app.run(debug=True, host="127.0.0.1", port=5000)

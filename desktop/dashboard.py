@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from database import connect_database
+from database.database import connect_database
 from style import setup_style, COLORS, FONTS
 from utils import center_window, confirm, today_str
 
