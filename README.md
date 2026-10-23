@@ -126,6 +126,7 @@ column anywhere — only `available`.
 ```
 LMS / (Library Management System)
 │
+├── .github/workflows/ci-cd.yml - GitHub Actions CI/CD automated test & build
 ├── main.py                    - application entry point (run this)
 ├── login.py                   - login screen
 ├── dashboard.py               - main hub, sidebar navigation, live statistics
@@ -141,6 +142,9 @@ LMS / (Library Management System)
 ├── change_password.py         - change password screen
 ├── requirements.txt          - Python dependencies
 ├── start_library_system.bat   - Windows one-click launcher
+├── push_to_github.bat         - One-click GitHub deployment script
+├── build_exe.bat              - One-click standalone Windows .exe compiler
+├── test_lms.py                - Automated unit & integration test suite
 ├── library.db                 - SQLite database (auto-created)
 ├── .gitignore                 - Git ignore configuration
 └── README.md
