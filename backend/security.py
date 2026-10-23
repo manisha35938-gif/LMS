@@ -18,3 +18,4 @@ def verify_password(password: str, stored_hash: str) -> bool:
     if not password or not stored_hash:
         return False
     return check_password_hash(stored_hash, password)
+

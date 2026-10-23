@@ -41,3 +41,4 @@ def center_window(win, width, height):
 def clear_treeview(tree):
     for row in tree.get_children():
         tree.delete(row)
+

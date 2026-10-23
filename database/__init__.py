@@ -8,3 +8,4 @@ from .database import (
     DEFAULT_ADMIN_PASSWORD,
     DB_NAME,
 )
+

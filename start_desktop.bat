@@ -20,3 +20,4 @@ if %errorlevel% neq 0 (
     echo An error occurred running the desktop application.
     pause
 )
+

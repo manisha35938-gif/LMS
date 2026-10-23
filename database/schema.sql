@@ -44,3 +44,4 @@ CREATE TABLE IF NOT EXISTS issued_books (
     FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
     FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
 );
+

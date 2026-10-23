@@ -61,3 +61,4 @@ def format_currency(amount: float) -> str:
         return f"₹{float(amount):.2f}"
     except (ValueError, TypeError):
         return "₹0.00"
+

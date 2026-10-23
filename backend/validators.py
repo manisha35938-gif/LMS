@@ -66,3 +66,4 @@ def is_valid_isbn(isbn) -> bool:
     if len(cleaned) == 10 and cleaned[:-1].isdigit() and cleaned[-1] in "0123456789Xx":
         return True
     return cleaned.isdigit() and 8 <= len(cleaned) <= 13
+
